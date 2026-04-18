@@ -6,6 +6,8 @@
   --color-primary: #00f3ff;
   --color-secondary: #ffd700;
   --color-accent: #00ff9d;
+  --color-critical: #ff4444;
+  --color-success: #00ff9d;
 
   --color-text: #ffffff;
   --color-text-dim: #7da0b0;
@@ -213,6 +215,49 @@ canvas {
   opacity: 1 !important;
 }
 
+/* Section Titles */
+.section-title {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 8px;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(to right, var(--color-primary), transparent);
+}
+
+/* Loading spinner */
+.loading-pulse {
+  display: inline-block;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Blink for topology nodes */
+.blink {
+  animation: blink-anim 2s ease-in-out infinite;
+}
+
+@keyframes blink-anim {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 /* Deep Reach Button */
 .deep-reach-btn {
   border-color: var(--color-primary);
@@ -234,17 +279,19 @@ canvas {
   padding: 1rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   color: var(--color-text-dim);
   text-decoration: none;
   font-family: var(--font-mono);
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .contact-link:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-text);
+  border-color: var(--color-primary);
   color: var(--color-text);
   transform: translateX(5px);
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
 }
 
 /* MOBILE RESPONSIVENESS */

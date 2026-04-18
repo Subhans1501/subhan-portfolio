@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
 
+/**
+ * LIVE GitHub Pinned Repos Integration
+ * 
+ * Fetches pinned repos via the /api/pinned-repos serverless function.
+ * On Vercel: automatically handled by the api/ directory.
+ * Locally: proxied to the api-dev-server.js via vite config.
+ * 
+ * This is fully LIVE — whenever you change pinned repos on GitHub,
+ * the portfolio auto-updates. No hardcoded repo names.
+ */
 export default function useGithub(username) {
     const [repos, setRepos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -12,32 +22,60 @@ export default function useGithub(username) {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                // Fetch Repos (Fetch 100 to ensure we find top non-forks)
-                const repoRes = await fetch(`https://api.github.com/users/${username}/repos?sort=pushed&per_page=100`);
 
-                if (!repoRes.ok) {
-                    if (repoRes.status === 403 || repoRes.status === 429) throw new Error('GitHub API Rate Limit Exceeded');
-                    throw new Error('Failed to fetch repos');
+                // Fetch pinned repos from our serverless API
+                const pinnedRes = await fetch(`/api/pinned-repos?username=${username}`);
+
+                if (!pinnedRes.ok) {
+                    throw new Error(`API returned ${pinnedRes.status}`);
                 }
-                const allRepos = await repoRes.json();
 
-                // Filter: No Forks, Top 6
-                const filteredRepos = allRepos.filter(repo => !repo.fork).slice(0, 6);
+                const data = await pinnedRes.json();
 
-                // Fetch Profile (for avatar/bio)
+                if (data.repos && data.repos.length > 0) {
+                    setRepos(data.repos);
+                    console.log(`✅ Loaded ${data.repos.length} pinned repos (source: ${data.source})`);
+                } else {
+                    throw new Error('No pinned repos returned from API');
+                }
+
+                // Fetch profile separately (this works via CORS from api.github.com)
                 const profileRes = await fetch(`https://api.github.com/users/${username}`);
-                const profileData = await profileRes.json();
-
-                setRepos(filteredRepos);
-                setProfile(profileData);
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    setProfile(profileData);
+                }
             } catch (err) {
+                console.warn('⚠️ Live fetch failed, using fallback:', err.message);
                 setError(err.message);
-                // Fallback data for demo if API fails (rate limits etc)
-                setRepos([
-                    { id: 1, name: "Neural_Network_Viz", description: "3D Visualization of Neural Networks using Three.js", language: "JavaScript", stargazers_count: 12, html_url: "#" },
-                    { id: 2, name: "AI_Portfolio", description: "Professional Portfolio with Glassmorphism UI", language: "React", stargazers_count: 45, html_url: "#" },
-                    { id: 3, name: "Transformer_Research", description: "Implementation of Attention mechanisms from scratch.", language: "Python", stargazers_count: 8, html_url: "#" }
-                ]);
+                // Fallback: fetch top repos from GitHub REST API (this has CORS support)
+                try {
+                    const fallbackRes = await fetch(
+                        `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`
+                    );
+                    if (fallbackRes.ok) {
+                        const allRepos = await fallbackRes.json();
+                        const filtered = allRepos.filter(r => !r.fork).slice(0, 6);
+                        setRepos(filtered);
+                        setError(null); // Clear error since fallback worked
+                        console.log('📦 Loaded repos from GitHub REST fallback');
+                    } else {
+                        throw new Error('REST API also failed');
+                    }
+
+                    const profileRes = await fetch(`https://api.github.com/users/${username}`);
+                    if (profileRes.ok) setProfile(await profileRes.json());
+                } catch {
+                    // Final fallback: static data
+                    setRepos([
+                        { id: 1, name: "CNN-Binary-Image-Classifier", description: "A Deep Learning project implementing a CNN using TensorFlow and Keras for binary image classification.", language: "Jupyter Notebook", stargazers_count: 0, forks_count: 0, html_url: `https://github.com/${username}/CNN-Binary-Image-Classifier` },
+                        { id: 2, name: "ResNet50-Transfer-Learning-Classifier", description: "An advanced Deep Learning pipeline utilizing Transfer Learning with a pre-trained ResNet50 architecture.", language: "Jupyter Notebook", stargazers_count: 0, forks_count: 0, html_url: `https://github.com/${username}/ResNet50-Transfer-Learning-Classifier` },
+                        { id: 3, name: "subhan-portfolio", description: "Personal portfolio showcasing full-stack engineering and agentic AI projects.", language: "JavaScript", stargazers_count: 0, forks_count: 0, html_url: `https://github.com/${username}/subhan-portfolio` },
+                        { id: 4, name: "Sudoku-Reasoning-Engine", description: "A formal logic solver using Propositional and First-Order Logic.", language: "Jupyter Notebook", stargazers_count: 0, forks_count: 0, html_url: `https://github.com/${username}/Sudoku-Reasoning-Engine` },
+                        { id: 5, name: "SVM-Heart-Disease-Predictor", description: "SVM with RBF kernel to predict heart disease.", language: "Jupyter Notebook", stargazers_count: 0, forks_count: 0, html_url: `https://github.com/${username}/SVM-Heart-Disease-Predictor` },
+                        { id: 6, name: "mlops-automated-pipeline", description: "End-to-end MLOps pipeline with automated CI/CD and MLflow.", language: "Python", stargazers_count: 0, forks_count: 0, html_url: `https://github.com/${username}/mlops-automated-pipeline` },
+                    ]);
+                }
             } finally {
                 setLoading(false);
             }

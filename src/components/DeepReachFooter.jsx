@@ -9,7 +9,18 @@ export default function DeepReachFooter() {
             transition={{ delay: 0.5 }}
             className="deep-reach-footer"
         >
-            <div className="footer-content">
+            <div className="footer-content" style={{ flexDirection: 'column', gap: '2rem' }}>
+                {/* Tag line */}
+                <div style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.85rem',
+                    color: 'var(--color-text-dim)',
+                    textAlign: 'center',
+                    letterSpacing: '2px',
+                }}>
+                    BUILT WITH REACT + VITE // DEPLOYED ON VERCEL
+                </div>
+
                 {/* Social Media Icons */}
                 <div className="social-badges">
                     {/* GitHub Icon */}
@@ -32,6 +43,17 @@ export default function DeepReachFooter() {
                             <path d="M0 3v18h24v-18h-24zm6.623 7.929l-4.623 5.712v-9.458l4.623 3.746zm-4.141-5.929h19.035l-9.517 7.713-9.518-7.713zm5.694 7.188l3.824 3.099 3.83-3.104 5.612 6.817h-18.866l5.6-6.812zm9.208-1.264l4.616-3.741v9.348l-4.616-5.607z"/>
                         </svg>
                     </a>
+                </div>
+
+                {/* Copyright */}
+                <div style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.7rem',
+                    color: 'rgba(125, 160, 176, 0.5)',
+                    textAlign: 'center',
+                    letterSpacing: '1px',
+                }}>
+                    © {new Date().getFullYear()} SUBHAN SHAHID — ALL RIGHTS RESERVED
                 </div>
             </div>
         </motion.div>
